@@ -9,6 +9,8 @@ EV_SOURCE = 1
 MENU = 2
 LINE = 10
 
+
+
 def menu_screen():
     display.fill(0)
     display.text("MENU",12,0,1)
@@ -41,15 +43,11 @@ pwm = PWM(panel_pin)
 frequency = 5000
 pwm.freq(frequency)
 
-
 btn_up = Pin(21, Pin.IN, Pin.PULL_UP)
 btn_dn = Pin(22, Pin.IN, Pin.PULL_UP)
 btn_sw = Pin(18, Pin.IN, Pin.PULL_UP)
 
-
 dimming_level = 30000
-
-
 
 global state
 #state = EV_SOURCE
@@ -63,13 +61,16 @@ while True:
             
         #SET LED PANEL TO FULL ON--NO PWM
 
+        #THE FOLLOWING LINE IS BLOCKING
         period = sensor1.pulse_width()
+        
         speed = period /1000000
         speed = 1/speed
-        display.fill_rect(0, LINE, 100, LINE*2, 0)  
-        display.text("TI: " + str(period) +"ms",0,LINE,1)
-        display.text("SS: 1/" + str(int(speed)), 0,LINE*2,1)
-        display.text("1) Restart" + str(int(speed)), 0,LINE*3,1)
+        
+        display.fill_rect(0, LINE, 100, LINE*3, 0)
+        display.text("TI: " + str(period) +"us",0,LINE,1)
+        display.text("SS: 1/" + str(int(speed)), 0,LINE*2,1) #ROUND SPEED
+        display.text("1) Restart", 0,LINE*3,1)
         display.show()
         state = MENU
         #display.fill_rect(0, 20, 120, 8, 0)  
