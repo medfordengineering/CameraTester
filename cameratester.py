@@ -1,8 +1,9 @@
-#from time import sleep_ms
-import time
+#import time
 from pulse_measure import PulseWidth
+from pulse_gap import FirstCurtain
+from pulse_drop import SecondCurtain
 from machine import Pin, SPI, PWM
-#from enum import Enum
+
 import ssd1306
 
 SHUTTER_SPEED = 0
@@ -11,7 +12,6 @@ MENU = 2
 LINE = 10
 
 LED_PIN = 20
-
 
 def menu_screen():
     display.fill(0)
@@ -31,13 +31,11 @@ display.rotate(True)
 display.fill(0)                         # Clear screen (0=black, 1=white)
 display.show()
 
-BX = 0
-BY = 0
-BW = 90
-BH = 30
+top_frame=PulseWidth(13)
+#sensor2=PulseWidth(12)
 
-sensor1=PulseWidth(13)
-sensor2=PulseWidth(12)
+front_curtain=FirstCurtain(4,12,13)
+rear_curtain=SecondCurtain(3,12, 13)
 
 light = Pin(LED_PIN, Pin.OUT)
 # Set up PWM Pin
@@ -53,47 +51,49 @@ btn_sw = Pin(18, Pin.IN, Pin.PULL_UP)
 dimming_level = 30000
 
 global state
-#state = EV_SOURCE
-#state = SHUTTER_SPEED
 state = MENU
+
 menu_screen()
 
 pulse1 = False
 pulse2 = False
+pulse3 = False
+pulse4 = False
 
 while True:
-    #time.sleep_ms(100)
+
     if state == SHUTTER_SPEED:
             
         #SET LED PANEL TO FULL ON--NO PWM
+        if pulse3 == False:
+            period = front_curtain.curtain_speed()
+            if period != 0:
+                front_curtain_travel = 24* period/16
+                pulse3 = True
         
-        if pulse1 == False:
-            period1 = sensor1.pulse_width()
-            if period1 != 0:
-                speed1 = period1 /1000000
-                speed1 = 1/speed1
-                pulse1 = True
-            
+        if pulse4 == False:
+            period = rear_curtain.curtain_speed()
+            if period != 0:
+                rear_curtain_travel = 24* period/16
+                pulse4 = True
+                
         if pulse2 == False:
-            period2 = sensor2.pulse_width()
-            if period2 != 0:
-                speed2 = period2 /1000000
-                speed2 = 1/speed2
+            period = top_frame.pulse_width()
+            if period != 0:
+                speed_top = 1000000/period
                 pulse2 = True
-        
-        if (pulse1 == True) and (pulse2 == True):
-            display.fill_rect(0, LINE, 100, LINE*3, 0)
-            display.text("TI: " + str(period1) +"us",0,LINE,1)
-            display.text("SS: 1/" + str(int(speed1)), 0,LINE*2,1) #ROUND SPEED
-            display.text("T2: " + str(period2) +"us",0,LINE*3,1)
-            display.text("S2: 1/" + str(int(speed2)), 0,LINE*4,1) #ROUND SPEED
-            display.text("1) Restart", 0,LINE*5,1)
-            display.show()
-            state = MENU
-      #  else:
-       #     counter = counter + 1
-         #   print(counter)
-        
+
+        if (pulse3 == True) and (pulse4 == True) and (pulse2 == True):
+                display.fill_rect(0, LINE, 100, LINE*3, 0)
+                display.text("FC: " + str(front_curtain_travel) +"us",0,LINE,1)
+                display.text("RC: " + str(rear_curtain_travel) +"us",0,LINE*2,1)
+                display.text("SS1: 1/" + str(int(speed_top)), 0,LINE*3,1) #ROUND SPEED
+                display.text("1) Restart", 0,LINE*5,1)
+                display.show()
+                pulse2 = False
+                pulse3 = False
+                pulse4 = False
+                state = MENU
             
     elif state == EV_SOURCE:
         pwm.duty_u16(dimming_level)
@@ -117,7 +117,6 @@ while True:
             display.show()
                     
     elif state == MENU:
-        #print("ready")
         if btn_up.value() == 0:
             state = SHUTTER_SPEED
             #Turn on light panel
@@ -137,3 +136,5 @@ while True:
                     
    
     
+
+
