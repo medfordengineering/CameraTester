@@ -12,6 +12,11 @@ MENU = 2
 LINE = 10
 
 LED_PIN = 20
+BTN_ONE = 21
+BTN_TWO = 22
+BTN_TRE = 18
+TOP_SENSOR = 13
+BOTTOM_SENSOR = 12
 
 def menu_screen():
     display.fill(0)
@@ -31,11 +36,10 @@ display.rotate(True)
 display.fill(0)                         # Clear screen (0=black, 1=white)
 display.show()
 
-top_frame=PulseWidth(13)
-#sensor2=PulseWidth(12)
+bottom_sensor=PulseWidth(BOTTOM_SENSOR)
 
-front_curtain=FirstCurtain(4,12,13)
-rear_curtain=SecondCurtain(3,12, 13)
+front_curtain=FirstCurtain(4,BOTTOM_SENSOR,TOP_SENSOR)
+rear_curtain=SecondCurtain(3,BOTTOM_SENSOR, TOP_SENSOR)
 
 light = Pin(LED_PIN, Pin.OUT)
 # Set up PWM Pin
@@ -44,9 +48,9 @@ light = Pin(LED_PIN, Pin.OUT)
 #frequency = 5000
 #pwm.freq(frequency)
 
-btn_up = Pin(21, Pin.IN, Pin.PULL_UP)
-btn_dn = Pin(22, Pin.IN, Pin.PULL_UP)
-btn_sw = Pin(18, Pin.IN, Pin.PULL_UP)
+btn_up = Pin(BTN_ONE, Pin.IN, Pin.PULL_UP)
+btn_dn = Pin(BTN_TWO, Pin.IN, Pin.PULL_UP)
+btn_sw = Pin(BTN_TRE, Pin.IN, Pin.PULL_UP)
 
 dimming_level = 30000
 
@@ -68,17 +72,19 @@ while True:
         if pulse3 == False:
             period = front_curtain.curtain_speed()
             if period != 0:
-                front_curtain_travel = 24* period/16
+                #front_curtain_travel = 24* period/16
+                front_curtain_travel = period
                 pulse3 = True
         
         if pulse4 == False:
             period = rear_curtain.curtain_speed()
             if period != 0:
-                rear_curtain_travel = 24* period/16
+                #rear_curtain_travel = 24* period/16
+                rear_curtain_travel = period
                 pulse4 = True
                 
         if pulse2 == False:
-            period = top_frame.pulse_width()
+            period = bottom_sensor.pulse_width()
             if period != 0:
                 speed_top = 1000000/period
                 pulse2 = True
