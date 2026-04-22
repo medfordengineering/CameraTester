@@ -1,7 +1,7 @@
 #import time
 from pulse_measure import PulseWidth
-from pulse_gap import FirstCurtain
-from pulse_drop import SecondCurtain
+from first_curtain import FirstCurtain
+from second_curtain import SecondCurtain
 from machine import Pin, SPI, PWM
 
 import ssd1306
